@@ -1,5 +1,6 @@
 package com.sky.handler;
 
+import com.sky.constant.MessageConstant;
 import com.sky.exception.BaseException;
 import com.sky.result.Result;
 import lombok.extern.slf4j.Slf4j;
@@ -23,5 +24,15 @@ public class GlobalExceptionHandler {
         log.error("异常信息：{}", ex.getMessage());
         return Result.error(ex.getMessage());
     }
+
+    //捕获其他异常
+    @ExceptionHandler
+    public Result exceptionHandler(Exception ex){
+        ex.printStackTrace();
+        return Result.error(MessageConstant.UNKNOWN_ERROR);
+
+    }
+
+
 
 }

@@ -17,7 +17,7 @@ import java.io.Serializable;
 public class EmployeeLoginVO implements Serializable {
 
     @ApiModelProperty("主键值")
-    private Long id;
+    private Long id; //数据库里是bitInt = java里的long类型
 
     @ApiModelProperty("用户名")
     private String userName;
