@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sky.mapper.DishMapper">
+
+
+    <!--根据条件对菜品进行分页查询-->
+    <select id="list" resultType="com.sky.vo.DishVO">
+        select d.*,
+        c.name categoryName from dish d left join category c
+        on d.category_id = c.id
+        <where>
+            <if test="name!=null and name != '' ">
+                d
+                .
+                name
+                like concat('%',
+                #{name},
+                '%'
+                )
+            </if>
+            <if test="categoryId != null">
+                and d.category_id =
+                #{categoryId}
+            </if>
+            <if test="status != null">
+                and c.status =
+                #{status}
+            </if>
+        </where>
+        order by d.create_time desc
+    </select>
+
+
+    <!--统计起售菜品的数量-->
+    <select id="countEnableDishByIds" resultType="java.lang.Long">
+        select count(*) from dish where id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+        and status=1
+    </select>
+
+
+    <!--删除菜品的基本信息-->
+    <delete id="deleteBasic">
+        delete from dish where id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+    <!--动态修改菜品的基本信息 -->
+    <update id="update">
+        update dish
+        <set>
+            <if test="name!=null and name!= ''">
+                name
+                =
+                #{name},
+            </if>
+            <if test="categoryId != null">
+                category_id
+                =
+                #{categoryId},
+            </if>
+            <if test="price!=null">
+                price
+                =
+                #{price},
+            </if>
+            <if test="image!=null and image!=''">
+                image
+                =
+                #{image},
+            </if>
+            <if test="description!=null and description!=''">
+                description
+                =
+                #{description},
+            </if>
+            <if test="status != null">
+                status
+                =
+                #{status},
+            </if>
+            <if test="updateTime!=null">
+                update_time
+                =
+                #{updateTime},
+            </if>
+            <if test="updateUser!=null">
+                update_user
+                =
+                #{updateUser}
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+
+
+
+
+
+</mapper>
+
+
+
+
+
+
+

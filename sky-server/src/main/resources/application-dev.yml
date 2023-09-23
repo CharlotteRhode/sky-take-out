@@ -6,3 +6,15 @@ sky:
     database: sky_take_out
     username: root
     password: 12341234
+
+
+  alioss:
+    endpoint: oss-cn-beijing.aliyuncs.com
+    access-key-id: LTAI5tNN1z1pyP6SyyVZGNgo
+    access-key-secret: OFWALlOAM86XRe10JjeHEAstHSvxEp
+    bucket-name: charlotte-sky-take-out
+
+
+  wechat:
+    appid: wxe64fd4a286785deb
+    secret: d6fa5f8a4c5209ec8fa00b1fc0903cff
