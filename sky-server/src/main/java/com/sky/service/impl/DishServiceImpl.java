@@ -146,8 +146,32 @@ public class DishServiceImpl implements DishService {
         dishFlavorMapper.insertBatch(flavors);
     }
 
+    /**
+     * 条件查询菜品和口味
+     * @param queryDTO
+     * @return
+     */
+    public List<DishVO> listWithFlavor(DishPageQueryDTO queryDTO) {
+        List<DishVO> dishList = dishMapper.list(queryDTO);
 
+        List<DishVO> dishVOList = new ArrayList<>();
+
+        for (DishVO d : dishList) {
+            DishVO dishVO = new DishVO();
+            BeanUtils.copyProperties(d,dishVO);
+
+            //根据菜品id查询对应的口味
+            List<DishFlavor> flavors = dishFlavorMapper.getFlavorInfo(d.getId());
+
+            dishVO.setFlavors(flavors);
+            dishVOList.add(dishVO);
+        }
+
+        return dishVOList;
     }
+
+
+}
 
 
 
