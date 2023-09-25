@@ -46,4 +46,9 @@ public interface SetmealMapper {
     List<DishItemVO> getDishItemBySetmealId(Long setmealId);
 
 
+    
+
+
+    //更新套餐信息
+    void updateSetmeal(Long i);
 }

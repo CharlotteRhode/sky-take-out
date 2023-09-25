@@ -10,9 +10,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController("userDishController")
@@ -26,19 +25,22 @@ public class DishController {
     /**
      * 根据分类id查询菜品
      *
-     * @param categoryId
+     * @param dishPageQueryDTO
      * @return
      */
     @GetMapping("/list")
     @ApiOperation("根据分类id查询菜品")
-    public Result<List<DishVO>> list(Integer categoryId) {
-        DishPageQueryDTO dishPageQueryDTO = new DishPageQueryDTO();
-        dishPageQueryDTO.setCategoryId(categoryId);
-        dishPageQueryDTO.setStatus(StatusConstant.ENABLE);//查询起售中的菜品
+    public Result<List<DishVO>> list(DishPageQueryDTO dishPageQueryDTO) {
+        DishPageQueryDTO queryDTO = new DishPageQueryDTO();
+        queryDTO.setCategoryId(dishPageQueryDTO.getCategoryId());
+        queryDTO.setStatus(StatusConstant.ENABLE);//查询起售中的菜品
 
         List<DishVO> list = dishService.listWithFlavor(dishPageQueryDTO);
 
         return Result.success(list);
     }
+
+
+
 
 }

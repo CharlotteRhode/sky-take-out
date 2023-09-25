@@ -11,9 +11,11 @@ import com.sky.vo.DishVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.convert.PeriodUnit;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @RestController
@@ -22,6 +24,8 @@ public class DishController {
 
     @Autowired
     private DishService dishService;
+    @Autowired
+    private RedisTemplate redisTemplate;
 
 
     //新增菜品：
@@ -30,6 +34,13 @@ public class DishController {
         log.info("新增一个菜品, {}", dishDTO);
 
         dishService.save(dishDTO);
+
+
+        //删除redis缓存中的数据：
+        redisTemplate.delete("dish:cache" + dishDTO.getCategoryId());
+        log.info("新增菜品： 缓存中之前保存的数据已清空");
+
+
 
         return Result.success();
     }
@@ -47,6 +58,13 @@ public class DishController {
     public Result delete(@RequestParam List<Long> ids){//集合的注解
         log.info("delete dishes,{}", ids);
         dishService.delete(ids);
+
+        //删除redis缓存中的数据：直接全删
+        Set keys = redisTemplate.keys("dish:cache:*");
+        redisTemplate.delete(keys);
+        log.info("删除菜品，删除缓存中所有dish开头的数据");
+
+
         return Result.success();
 
     }
@@ -63,6 +81,32 @@ public class DishController {
     @PutMapping
     public Result updateDish(@RequestBody DishDTO dishDTO){
         dishService.update(dishDTO);
+
+
+        //修改redis缓存中的数据：直接全删
+        Set keys = redisTemplate.keys("dish:cache:*");
+        redisTemplate.delete(keys);
+        log.info("修改菜品，删除缓存中所有dish开头的数据");
+
+
+
+        return Result.success();
+    }
+
+
+
+    //起售/停售菜品
+    @PostMapping("/status/{status}/{id}")
+    public Result startOrStop(@PathVariable Integer status, @PathVariable Long id){
+        dishService.startOrStop(id, status);
+
+
+        //停售/起售redis缓存中的数据：直接全删
+        Set keys = redisTemplate.keys("dish:cache:*");
+        redisTemplate.delete(keys);
+        log.info("修改菜品售卖状态，删除缓存中所有dish开头的数据");
+
+
         return Result.success();
     }
 

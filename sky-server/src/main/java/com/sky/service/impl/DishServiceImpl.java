@@ -9,10 +9,12 @@ import com.sky.dto.DishDTO;
 import com.sky.dto.DishPageQueryDTO;
 import com.sky.entity.Dish;
 import com.sky.entity.DishFlavor;
+import com.sky.entity.Setmeal;
 import com.sky.exception.BaseException;
 import com.sky.mapper.DishFlavorMapper;
 import com.sky.mapper.DishMapper;
 import com.sky.mapper.SetmealDishMapper;
+import com.sky.mapper.SetmealMapper;
 import com.sky.result.PageResult;
 import com.sky.service.DishService;
 import com.sky.vo.DishVO;
@@ -20,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -27,6 +30,7 @@ import org.springframework.util.CollectionUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 
 @Slf4j
@@ -41,6 +45,10 @@ public class DishServiceImpl implements DishService {
     private DishFlavorMapper dishFlavorMapper;
     @Autowired
     private SetmealDishMapper setmealDishMapper;
+    @Autowired
+    private SetmealMapper setmealMapper;
+    @Autowired
+    private RedisTemplate redisTemplate;
 
 
     //新增菜品：
@@ -64,6 +72,8 @@ public class DishServiceImpl implements DishService {
         });
 
         dishFlavorMapper.insertBatch(flavors);
+
+
 
 
     }
@@ -102,6 +112,9 @@ public class DishServiceImpl implements DishService {
         //3. 删除菜品，并删除口味
         dishMapper.deleteBasic(ids);//删除基本信息
         dishFlavorMapper.deleteFlavor(ids);//删除口味信息
+
+
+
     }
 
 
@@ -140,25 +153,42 @@ public class DishServiceImpl implements DishService {
 
 
         List<DishFlavor> flavors = dishDTO.getFlavors();
-        flavors.forEach(i->{
+        flavors.forEach(i -> {
             i.setDishId(dish.getId());
         });
         dishFlavorMapper.insertBatch(flavors);
+
+
+
     }
+
 
     /**
      * 条件查询菜品和口味
-     * @param queryDTO
+     *
+     * @param dishPageQueryDTO
      * @return
      */
-    public List<DishVO> listWithFlavor(DishPageQueryDTO queryDTO) {
-        List<DishVO> dishList = dishMapper.list(queryDTO);
+    public List<DishVO> listWithFlavor(DishPageQueryDTO dishPageQueryDTO) {
+        //1.  查询缓存，
+        String redisKey = "dish:cache" + dishPageQueryDTO;
+
+        List<DishVO> redisResult = (List<DishVO>) redisTemplate.opsForValue().get(redisKey);
+        //如果缓存中有此数据，直接返回结果
+        if (!CollectionUtils.isEmpty(redisResult)) {
+            log.info("redis has the data, return it from redis");
+            return redisResult;
+        }
+
+
+        //2.如果缓存里没有此数据，查询数据库
+        List<DishVO> dishList = dishMapper.list(dishPageQueryDTO);
 
         List<DishVO> dishVOList = new ArrayList<>();
 
         for (DishVO d : dishList) {
             DishVO dishVO = new DishVO();
-            BeanUtils.copyProperties(d,dishVO);
+            BeanUtils.copyProperties(d, dishVO);
 
             //根据菜品id查询对应的口味
             List<DishFlavor> flavors = dishFlavorMapper.getFlavorInfo(d.getId());
@@ -167,8 +197,41 @@ public class DishServiceImpl implements DishService {
             dishVOList.add(dishVO);
         }
 
+        //3. 把数据库中查询到的结果，加入缓存中
+        redisTemplate.opsForValue().set(redisKey, dishVOList);
+        log.info("redis is empty, go to SQL, insert data from SQL into redis");
+
         return dishVOList;
     }
+
+
+    //起售/停售菜品
+    @Override
+    public void startOrStop(Long id, Integer status) {
+        //1. 更新菜品状态信息
+        Dish dish = Dish.builder()
+                .id(id)
+                .status(status)
+                .build();
+
+        dishMapper.update(dish);
+        //2. 如果是停售操作，还需要将菜品关联的套餐也停售了
+        if (status == StatusConstant.DISABLE) {
+            List<Long> setmealIds = setmealDishMapper.countRelatedDishByIds(Collections.singletonList(id));
+            if (!CollectionUtils.isEmpty(setmealIds)) {
+                setmealIds.stream().forEach(i -> {
+                    Setmeal setmeal = Setmeal.builder().id(i).status(StatusConstant.DISABLE).build();
+                    setmealMapper.updateSetmeal(i);
+                });
+            }
+        }
+
+
+    }
+
+
+
+
 
 
 }

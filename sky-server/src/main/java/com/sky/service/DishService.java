@@ -32,12 +32,13 @@ public interface DishService {
 
     /**
      * 条件查询菜品和口味
-     * @param queryDTO
+     * @param dishPageQueryDTO
      * @return
      */
-    List<DishVO> listWithFlavor(DishPageQueryDTO queryDTO);
+    List<DishVO> listWithFlavor(DishPageQueryDTO  dishPageQueryDTO);
 
 
-
+    //起售/停售菜品
+    void startOrStop(Long id, Integer status);
 }
 

@@ -19,10 +19,15 @@ import com.sky.service.SetmealService;
 import com.sky.vo.DishItemVO;
 import com.sky.vo.SetmealVO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.aop.framework.autoproxy.BeanFactoryAdvisorRetrievalHelper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+
 import java.util.List;
 
 /**
@@ -44,6 +49,7 @@ public class SetmealServiceImpl implements SetmealService {
      * @param setmeal
      * @return
      */
+    @Cacheable(cacheNames = "setmeal:cache", key = "#a0.categoryId")
     public List<Setmeal> list(Setmeal setmeal) {
         List<Setmeal> list = setmealMapper.list(setmeal);
         return list;
@@ -57,4 +63,34 @@ public class SetmealServiceImpl implements SetmealService {
     public List<DishItemVO> getDishItemById(Long id) {
         return setmealMapper.getDishItemBySetmealId(id);
     }
+
+
+    /*//新增套餐
+    @CacheEvict(cacheNames ="setmeal:cache" ,key ="#a0.categoryId" )
+    @Override
+    public void save(SetmealDTO setmealDTO) { //todo
+        //保存套餐的基本信息
+        Setmeal thisMeal = new Setmeal();
+        BeanUtils.copyProperties(setmealDTO,thisMeal);
+
+        thisMeal.setStatus(StatusConstant.DISABLE);
+        setmealMapper.insert(thisMeal);
+
+
+        //获取套餐的主键id ：
+        Long id = thisMeal.getId();
+        List<SetmealDish> setmealDishes = setmealDTO.getSetmealDishes();
+        if (!CollectionUtils.isEmpty(setmealDishes)){
+            setmealDishes.stream().forEach(i->{
+                i.setSetmealId(id);
+            });
+        }
+        //保存套餐和菜品的关系
+        setmealDishMapper.insertBatch(setmealDishes);
+    }*/
+
+
+
+
+
 }
