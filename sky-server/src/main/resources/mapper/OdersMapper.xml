@@ -11,4 +11,28 @@
 
 
     </insert>
+
+        <!--更新订单状态-->
+    <update id="update" parameterType="com.sky.entity.Orders">
+    update orders
+    <set>
+        <if test="cancelReason != null and cancelReason != '' ">
+                cancel_reason = #{cancelReason},
+        </if>
+        <if test="rejectionReason != null and rejectionReason != ''">
+            rejection_reason = #{rejectionReason},
+        </if>
+        <if test="payStatus != null">
+            pay_status = #{payStatus},
+        </if>
+        <if test="status != null">
+            status = #{status}
+        </if>
+    </set>
+    where id = #{id}
+    </update>
+
+
+
+
 </mapper>
