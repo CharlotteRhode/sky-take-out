@@ -1,5 +1,6 @@
 package com.sky.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
 import com.sky.dto.OrdersSubmitDTO;
@@ -14,18 +15,23 @@ import com.sky.mapper.AddressBookMapper;
 import com.sky.mapper.OrderDetailMapper;
 import com.sky.mapper.OrdersMapper;
 import com.sky.mapper.ShoppingCartMapper;
+import com.sky.server.WebSocketServer;
 import com.sky.service.OrderService;
 import com.sky.vo.OrderSubmitVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-
+@Slf4j
 @Service
 public class OrderServiceImpl implements OrderService {
 
@@ -39,10 +45,13 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private OrderDetailMapper orderDetailMapper;
 
+    @Autowired
+    private WebSocketServer webSocketServer;
+
 
     //用户下单
     @Override
-    public OrderSubmitVO submit(OrdersSubmitDTO ordersSubmitDTO) {
+    public OrderSubmitVO submit(OrdersSubmitDTO ordersSubmitDTO) throws IOException {
         //查询收货地址：收货地址为空，不能下单：
         AddressBook addressBook = addressBookMapper.getById(ordersSubmitDTO.getAddressBookId());
         if (addressBook == null){
@@ -101,6 +110,16 @@ public class OrderServiceImpl implements OrderService {
                 .orderAmount(orders.getAmount())
                 .orderTime(orders.getOrderTime())
                 .build();
+
+        //用web socket给admin推送来单提醒：
+        Map<String, Object> msgMap = new HashMap<>();
+        msgMap.put("type", 1);
+        msgMap.put("orderId", orders.getId());
+        msgMap.put("content", "order number is: " + orders.getNumber());
+
+        log.info("向管理端推送来单提醒消息,{}", msgMap);
+
+        webSocketServer.sendMsg(JSONObject.toJSONString(msgMap));
 
         return result;
     }
