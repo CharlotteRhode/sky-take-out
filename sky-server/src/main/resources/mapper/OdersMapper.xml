@@ -32,7 +32,23 @@
     where id = #{id}
     </update>
 
-
+        <!--获取指定日期范围内的营业额turnover list:-->
+    <select id="checkTurnOverAmount" resultType="com.sky.dto.TurnOverReportDTO">
+        select
+            date_format(order_time, '%Y-%m-%d') orderDate,
+            sum(amount) orderMoney
+        from orders
+        <where>
+            <if test="status != null">
+                status = 5
+            </if>
+            <if test="beginTime != null and endTime != null">
+                and order_time between #{beginTime} and #{endTime}
+            </if>
+        </where>
+        group by date_format(order_time, '%Y-%m-%d') orderDate
+        order by date_format(order_time, '%Y-%m-%d') orderDate;
+    </select>
 
 
 </mapper>

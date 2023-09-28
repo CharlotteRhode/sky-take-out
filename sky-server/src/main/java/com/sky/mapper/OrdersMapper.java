@@ -1,6 +1,7 @@
 package com.sky.mapper;
 
 
+import com.sky.dto.TurnOverReportDTO;
 import com.sky.entity.Orders;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
@@ -22,4 +23,8 @@ public interface OrdersMapper {
 
     //更新订单状态 //todo: XML没写完整
     void update(Orders eachOrder);
+
+
+    //获取指定日期范围内的营业额turnover list:
+    List<TurnOverReportDTO> checkTurnOverAmount(LocalDateTime beginTime, LocalDateTime endTime);
 }
