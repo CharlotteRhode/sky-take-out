@@ -1,6 +1,8 @@
 package com.sky.mapper;
 
 
+import com.sky.dto.GoodsSalesDTO;
+import com.sky.dto.OrderReportDTO;
 import com.sky.dto.TurnOverReportDTO;
 import com.sky.entity.Orders;
 import org.apache.ibatis.annotations.Insert;
@@ -27,4 +29,10 @@ public interface OrdersMapper {
 
     //获取指定日期范围内的营业额turnover list:
     List<TurnOverReportDTO> checkTurnOverAmount(LocalDateTime beginTime, LocalDateTime endTime);
+
+    //查询指定日期范围内的订单数量：
+    List<OrderReportDTO> countOrderByOrderTime(LocalDateTime beginTime, LocalDateTime endTime);
+
+    //销量统计
+    List<GoodsSalesDTO> getSalesTop10(LocalDateTime begin, LocalDateTime end);
 }
