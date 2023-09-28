@@ -6,6 +6,7 @@ import com.sky.vo.SalesTop10ReportVO;
 import com.sky.vo.TurnoverReportVO;
 import com.sky.vo.UserReportVO;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
 
@@ -25,4 +26,8 @@ public interface ReportService {
 
     //销量统计
     SalesTop10ReportVO getSalesTop10(LocalDate begin, LocalDate end);
+
+
+    //excel报表导出
+    void exportData() throws IOException;
 }

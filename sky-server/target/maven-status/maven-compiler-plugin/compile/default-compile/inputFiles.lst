@@ -1,8 +1,0 @@
-/Users/leonasun/Desktop/myJava/IdeaProjects/sky/sky-server/src/main/java/com/sky/service/impl/EmployeeServiceImpl.java
-/Users/leonasun/Desktop/myJava/IdeaProjects/sky/sky-server/src/main/java/com/sky/service/EmployeeService.java
-/Users/leonasun/Desktop/myJava/IdeaProjects/sky/sky-server/src/main/java/com/sky/config/WebMvcConfiguration.java
-/Users/leonasun/Desktop/myJava/IdeaProjects/sky/sky-server/src/main/java/com/sky/handler/GlobalExceptionHandler.java
-/Users/leonasun/Desktop/myJava/IdeaProjects/sky/sky-server/src/main/java/com/sky/interceptor/JwtTokenAdminInterceptor.java
-/Users/leonasun/Desktop/myJava/IdeaProjects/sky/sky-server/src/main/java/com/sky/SkyApplication.java
-/Users/leonasun/Desktop/myJava/IdeaProjects/sky/sky-server/src/main/java/com/sky/mapper/EmployeeMapper.java
-/Users/leonasun/Desktop/myJava/IdeaProjects/sky/sky-server/src/main/java/com/sky/controller/admin/EmployeeController.java

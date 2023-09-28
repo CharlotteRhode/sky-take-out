@@ -8,24 +8,26 @@ import com.sky.entity.Orders;
 import com.sky.mapper.OrdersMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
-import com.sky.vo.OrderReportVO;
-import com.sky.vo.SalesTop10ReportVO;
-import com.sky.vo.TurnoverReportVO;
-import com.sky.vo.UserReportVO;
+import com.sky.vo.*;
 import org.apache.commons.lang.StringUtils;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -161,6 +163,51 @@ public class ReportServiceImpl implements ReportService {
 
         return new SalesTop10ReportVO(nameList, numberList);
 
+
+    }
+
+
+    @Autowired
+   private HttpServletResponse httpServletResponse;
+    //excel报表导出
+    @Override
+    public void exportData() throws IOException {
+        //获取最近30天的时间：begin, end
+        LocalDate begin = LocalDate.now().minusDays(30);
+        LocalDate end = LocalDate.now().minusDays(1);
+
+        String timeRange = begin.toString() + " - " + end.toString();
+
+
+        //调用mapper，查询各种数据
+        //todo: BusinessDataVO businessDataVO 还没写
+        BusinessDataVO businessDataVO  = (BusinessDataVO) ordersMapper.countOrderByOrderTime(LocalDateTime.of(begin, LocalTime.MIN), LocalDateTime.of(end, LocalTime.MAX));
+
+
+
+
+
+
+        List<UserReportDTO> newUserCount = userMapper.countAddByCreateTime(LocalDateTime.of(begin, LocalTime.MIN), LocalDateTime.of(end, LocalTime.MAX));
+
+        //加载excel模版
+        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("Template/运营数据报表模板.xlsx");
+        Workbook workbook = new XSSFWorkbook(inputStream);
+
+        //填充数据
+        Sheet theSheet = workbook.getSheetAt(0);
+        theSheet.getRow(1).getCell(1).setCellValue(timeRange);
+        theSheet.getRow(3).getCell(2).setCellValue(businessDataVO.getTurnover());
+        theSheet.getRow(3).getCell(4).setCellValue(businessDataVO.getOrderCompletionRate());
+        theSheet.getRow(3).getCell(6).setCellValue(String.valueOf(newUserCount));
+
+        //下载文件:把excel文件作为流，响应给浏览器，浏览器看见流，自动下载：
+        ServletOutputStream out = httpServletResponse.getOutputStream();
+        workbook.write(out);
+
+        //释放资源
+        out.close();
+        workbook.close();
 
     }
 
